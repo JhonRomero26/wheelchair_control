@@ -1,0 +1,5 @@
+{
+  "arduino.useArduinoCli": true,
+  "files.insertFinalNewline": true,
+  "C_Cpp.errorSquiggles": "disabled"
+}

@@ -1,0 +1,7 @@
+{
+    "sketch": "ble_wheelchair.ino",
+    "board": "arduino:avr:nano",
+    "configuration": "cpu=atmega328",
+    "baud": 9600,
+    "port": "/dev/ttyUSB2"
+}
