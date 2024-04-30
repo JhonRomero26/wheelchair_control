@@ -1,11 +1,10 @@
 #ifndef BLECONTROLLER_H
-  #define BLECONTROLLER_H
-#endif
+#define BLECONTROLLER_H
 #include "SoftwareSerial.h"
 
 class BleController {
   private:
-    char *name;
+    const char *name;
     SoftwareSerial *serial;
   
   public:
@@ -14,3 +13,5 @@ class BleController {
     void sendCommand(const char *cmd);
     const char * readCommand();
 };
+
+#endif
