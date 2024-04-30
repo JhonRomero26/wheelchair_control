@@ -4,7 +4,6 @@
 
 class BleController {
   private:
-    const char *name;
     SoftwareSerial *serial;
   
   public:
