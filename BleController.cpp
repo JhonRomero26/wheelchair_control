@@ -16,6 +16,8 @@ void BleController::begin(
   sendCommand("AT+ROLE0");
   sendCommand(strcat("AT+NAME", name));
   sendCommand("AT+START");
+
+  serial->write("");
 }
 
 
