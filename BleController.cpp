@@ -34,15 +34,13 @@ void BleController::sendCommand(const char *cmd) {
   Serial.println(reply);
 }
 
-const char* BleController::readCommand() {
-  char reply [50];
-  int i = 0;
+String BleController::readCommand() {
+  String message = "";
 
   while (serial->available()) {
-    reply[i] = serial->read();
-    i += 1;
+    char character = serial->read();
+    message += character;
   }
 
-  reply[i] = '\0';
-  return reply + i;
+  return message;
 }
