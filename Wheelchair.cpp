@@ -2,6 +2,9 @@
 #include "Arduino.h"
 #include "SabertoothSimplified.h"
 
+
+SabertoothSimplified st;
+
 enum MOTORS {
   MOTOR_LEFT = 1,
   MOTOR_RIGHT = 2
@@ -29,4 +32,6 @@ Wheelchair::Wheelchair(BleController *ble) {
 
 void Wheelchair::begin(int bauds) {
   SabertoothTXPinSerial.begin(bauds);
+  st.motor(MOTOR_LEFT, 0);
+  st.motor(MOTOR_RIGHT, 0);
 }
