@@ -2,6 +2,7 @@
 #include "Arduino.h"
 #include "SabertoothSimplified.h"
 
+
 #define MAX_SPEED_MOTOR 127  // max speed motor
 
 #ifndef TIME_FOR_MOVE
@@ -19,21 +20,21 @@ enum MOTORS {
   MOTOR_RIGHT = 2
 };
 
-enum MOVEMENT_COMMAND {
-  MOVE_FORWARD = 3,
-  MOVE_LEFT = 4,
-  MOVE_BACKWARD = 5,
-  MOVE_RIGHT = 6,
-  MOVE_STOP = 7,
-  MOVE_CLOCKWISE = 8,
-  MOVE_COUNTERCLOCKWISE = 9
-};
+// MOVEMENT_COMMAND
+#define WHEELCHAIR_MOVE_FORWARD "mf\0\n"
+#define WHEELCHAIR_MOVE_LEFT "ml\0\n"
+#define WHEELCHAIR_MOVE_BACKWARD "mb\0\n"
+#define WHEELCHAIR_MOVE_RIGHT "mr\0\n"
+#define WHEELCHAIR_MOVE_STOP "ms\0\n"
+#define WHEELCHAIR_ROTATE_LEFT "rl\0\n"
+#define WHEELCHAIR_ROTATE_RIGHT "rr\0\n"
+#define WHEELCHAIR_ROTATE_LEFT_VOICE "rlv\0\n"
+#define WHEELCHAIR_ROTATE_RIGHT_VOICE "rrv\0\n"
 
-enum SPEED_COMMAND {
-  SPEED_SLOW = 0,
-  SPEED_MEDIUM = 1,
-  SPEED_FAST = 2
-};
+// SPEED_COMMAND
+#define WHEELCHAIR_SPEED_SLOW "sv\0\n"
+#define WHEELCHAIR_SPEED_MEDIUM "nv\0\n"
+#define WHEELCHAIR_SPEED_FAST "fv\0\n"
 
 Wheelchair::Wheelchair(BleController *ble) {
   this->ble = ble;
