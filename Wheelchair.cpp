@@ -2,6 +2,15 @@
 #include "Arduino.h"
 #include "SabertoothSimplified.h"
 
+#define MAX_SPEED_MOTOR 127  // max speed motor
+
+#ifndef TIME_FOR_MOVE
+  #define TIME_FOR_MOVE  600   // time for move in ms
+#endif
+
+#ifndef TIME_FOR_STOP
+  #define TIME_FOR_MOVE  150   // time for move in ms
+#endif
 
 SabertoothSimplified st;
 
