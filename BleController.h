@@ -10,7 +10,7 @@ class BleController {
     BleController(int TX, int RX);
     void begin(int bauds, const char *name);
     void sendCommand(const char *cmd);
-    String readCommand();
+    void readCommand(char *buffer, size_t bufferSize);
 };
 
 #endif
