@@ -46,6 +46,10 @@ enum MOTORS {
 #define WHEELCHAIR_SPEED_MEDIUM_VAlUE 0.4
 #define WHEELCHAIR_SPEED_FAST_VAlUE 0.5
 
+#define WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT 0.15
+#define WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT2 0.25
+#define WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT3 0.35
+
 Wheelchair::Wheelchair(BleController *ble) {
   this->ble = ble;
 }
@@ -137,12 +141,12 @@ void Wheelchair::moveForward() {
 
 void Wheelchair::moveLeft() {
   const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent;
-  int limiterSpeed = maxSpeed * 0.1;
+  int limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT;
 
   if (strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT2) == 0) {
-    limiterSpeed = maxSpeed * 0.15;
+    limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT2;
   } else if (strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT3) == 0) {
-    limiterSpeed = maxSpeed * 0.2;
+    limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT3;
   }
 
   const int rightSpeed = maxSpeed - limiterSpeed;
@@ -160,12 +164,12 @@ void Wheelchair::moveLeft() {
 
 void Wheelchair::moveRight() {
   const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent;
-  int limiterSpeed = maxSpeed * 0.1;
+  int limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT;
 
   if (strcmp(directionCommand, WHEELCHAIR_MOVE_RIGHT2) == 0) {
-    limiterSpeed = maxSpeed * 0.15;
+    limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT2;
   } else if (strcmp(directionCommand, WHEELCHAIR_MOVE_RIGHT3) == 0) {
-    limiterSpeed = maxSpeed * 0.2;
+    limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT3;
   }
 
   const int rightSpeed = maxSpeed + limiterSpeed;
