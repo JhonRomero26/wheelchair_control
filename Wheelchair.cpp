@@ -42,6 +42,10 @@ enum MOTORS {
 #define WHEELCHAIR_SPEED_MEDIUM "nv\0\n"
 #define WHEELCHAIR_SPEED_FAST "fv\0\n"
 
+#define WHEELCHAIR_SPEED_SLOW_VAlUE 0.2
+#define WHEELCHAIR_SPEED_MEDIUM_VAlUE 0.4
+#define WHEELCHAIR_SPEED_FAST_VAlUE 0.5
+
 Wheelchair::Wheelchair(BleController *ble) {
   this->ble = ble;
 }
@@ -56,6 +60,14 @@ void Wheelchair::loop() {
   const char cmd[32];
   ble->readCommand(cmd, sizeof(cmd));
   const int currentTime = millis();
+
+  if (strcmp(cmd, WHEELCHAIR_SPEED_SLOW) == 0) {
+    this->speedPercent = WHEELCHAIR_SPEED_SLOW_VAlUE;
+  } else if (strcmp(cmd, WHEELCHAIR_SPEED_MEDIUM) == 0) {
+    this->speedPercent = WHEELCHAIR_SPEED_MEDIUM_VAlUE;
+  } else if (strcmp(cmd, WHEELCHAIR_SPEED_FAST) == 0) {
+    this->speedPercent = WHEELCHAIR_SPEED_FAST_VAlUE;
+  }
 
   if (
     strcmp(cmd, WHEELCHAIR_MOVE_FORWARD) == 0 ||
