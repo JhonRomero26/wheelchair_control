@@ -151,8 +151,8 @@ void Wheelchair::moveLeft() {
     limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT3;
   }
 
-  const int rightSpeed = maxSpeed - limiterSpeed;
-  const int leftSpeed = maxSpeed + limiterSpeed;
+  const int rightSpeed = maxSpeed + limiterSpeed;
+  const int leftSpeed = maxSpeed - limiterSpeed;
 
   if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += 1;
   if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= 1;
@@ -174,8 +174,8 @@ void Wheelchair::moveRight() {
     limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT3;
   }
 
-  const int rightSpeed = maxSpeed + limiterSpeed;
-  const int leftSpeed = maxSpeed - limiterSpeed;
+  const int rightSpeed = maxSpeed - limiterSpeed;
+  const int leftSpeed = maxSpeed + limiterSpeed;
 
   if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += 1;
   if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= 1;
