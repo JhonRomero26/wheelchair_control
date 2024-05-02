@@ -6,7 +6,7 @@
 #define MAX_SPEED_MOTOR 127  // max speed motor
 
 #ifndef TIME_FOR_MOVE
-  #define TIME_FOR_MOVE  300   // time for move in ms
+  #define TIME_FOR_MOVE  180   // time for move in ms
 #endif
 
 #ifndef TIME_FOR_STOP
@@ -188,11 +188,11 @@ void Wheelchair::moveRight() {
 
 
 void Wheelchair::moveBackward() {
-  const int maxSpeed = 20;
-  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed += 1;
-  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed += 1;
-  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed -= 1;
-  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed -= 1;
+  const int maxSpeed = -20;
+  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed -= 1;
+  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed -= 1;
+  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += 1;
+  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += 1;
 
   st.motor(MOTOR_LEFT, this->leftEngineSpeed * WHEELCHAIR_ENGINE_CORRECTION_PERCENT);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
