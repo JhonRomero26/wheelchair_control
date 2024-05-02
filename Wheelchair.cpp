@@ -113,13 +113,10 @@ void Wheelchair::moveForward() {
 
 void Wheelchair::moveBackward() {
   const int maxSpeed = -MAX_SPEED_MOTOR * 0.2;
-  if (
-    this->leftEngineSpeed < maxSpeed &&
-    this->rightEngineSpeed < maxSpeed
-  ) return;
-
-  this->leftEngineSpeed -= 1;
-  this->rightEngineSpeed -= 1;
+  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed -= 1;
+  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed -= 1;
+  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += 1;
+  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += 1;
 
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
