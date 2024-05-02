@@ -9,10 +9,14 @@ class Wheelchair {
     int leftEngineSpeed = 0;
     int rightEngineSpeed = 0;
     float speedPercent = 0.15;
+  
+  private:
+    void moveForward();
 
   public:
     Wheelchair(BleController *ble);
     void begin(int bauds);
+    void loop();
 };
 
 #endif

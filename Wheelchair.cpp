@@ -6,14 +6,16 @@
 #define MAX_SPEED_MOTOR 127  // max speed motor
 
 #ifndef TIME_FOR_MOVE
-  #define TIME_FOR_MOVE  600   // time for move in ms
+  #define TIME_FOR_MOVE  300   // time for move in ms
 #endif
 
 #ifndef TIME_FOR_STOP
-  #define TIME_FOR_MOVE  150   // time for move in ms
+  #define TIME_FOR_STOP  150   // time for move in ms
 #endif
 
 SabertoothSimplified st;
+int oldTime = 0;
+char directionCommand[32];
 
 enum MOTORS {
   MOTOR_LEFT = 1,
@@ -44,4 +46,44 @@ void Wheelchair::begin(int bauds) {
   SabertoothTXPinSerial.begin(bauds);
   st.motor(MOTOR_LEFT, 0);
   st.motor(MOTOR_RIGHT, 0);
+}
+
+void Wheelchair::loop() {
+  const char cmd[32];
+  ble->readCommand(cmd, sizeof(cmd));
+  const int currentTime = millis();
+
+  if (
+    strcmp(cmd, WHEELCHAIR_MOVE_FORWARD) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_BACKWARD) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_STOP) == 0 ||
+    strcmp(cmd, WHEELCHAIR_ROTATE_LEFT) == 0 ||
+    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT) == 0 ||
+    strcmp(cmd, WHEELCHAIR_ROTATE_LEFT_VOICE) == 0 ||
+    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT_VOICE) == 0
+  ) {
+    strcpy(directionCommand, cmd);
+  }
+
+
+  if (strcmp(directionCommand, WHEELCHAIR_MOVE_FORWARD) == 0) {
+    if (currentTime - oldTime > TIME_FOR_MOVE) {
+      moveForward();
+      oldTime = millis();
+    }
+  }
+}
+
+void Wheelchair::moveForward() {
+  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent;
+  if (
+    this->leftEngineSpeed > maxSpeed &&
+    this->rightEngineSpeed > maxSpeed
+  ) return;
+
+  this->leftEngineSpeed += 1;
+  this->rightEngineSpeed += 1;
+
+  st.motor(MOTOR_LEFT, this->leftEngineSpeed);
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
 }
