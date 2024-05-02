@@ -15,6 +15,7 @@ class Wheelchair {
     void stop();
     void moveBackward();
     void moveLeft();
+    void moveRight();
 
   public:
     Wheelchair(BleController *ble);
