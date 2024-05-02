@@ -87,3 +87,15 @@ void Wheelchair::moveForward() {
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
 }
+
+void Wheelchair::stop() {
+  if (this->leftEngineSpeed == 0 && this->rightEngineSpeed == 0) return;
+  
+  if (this->leftEngineSpeed > 0) this->leftEngineSpeed -= 1;
+  if (this->rightEngineSpeed > 0) this->rightEngineSpeed -= 1;
+  if (this->leftEngineSpeed < 0) this->leftEngineSpeed += 1;
+  if (this->rightEngineSpeed < 0) this->rightEngineSpeed += 1;
+
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
+  st.motor(MOTOR_LEFT, this->leftEngineSpeed);
+}

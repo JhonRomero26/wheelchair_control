@@ -12,6 +12,7 @@ class Wheelchair {
   
   private:
     void moveForward();
+    void stop();
 
   public:
     Wheelchair(BleController *ble);
