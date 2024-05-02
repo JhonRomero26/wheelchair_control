@@ -50,6 +50,8 @@ enum MOTORS {
 #define WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT2 0.25
 #define WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT3 0.35
 
+#define WHEELCHAIR_ENGINE_CORRECTION_PERCENT 0.78
+
 Wheelchair::Wheelchair(BleController *ble) {
   this->ble = ble;
 }
@@ -136,7 +138,7 @@ void Wheelchair::moveForward() {
   if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += 1;
 
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
-  st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * WHEELCHAIR_ENGINE_CORRECTION_PERCENT);
 }
 
 void Wheelchair::moveLeft() {
@@ -158,7 +160,7 @@ void Wheelchair::moveLeft() {
   if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 1;
   
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
-  st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * WHEELCHAIR_ENGINE_CORRECTION_PERCENT);
 }
 
 
@@ -192,7 +194,7 @@ void Wheelchair::moveBackward() {
   if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += 1;
   if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += 1;
 
-  st.motor(MOTOR_LEFT, this->leftEngineSpeed);
+  st.motor(MOTOR_LEFT, this->leftEngineSpeed * WHEELCHAIR_ENGINE_CORRECTION_PERCENT);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
 }
 
