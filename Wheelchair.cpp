@@ -76,7 +76,13 @@ void Wheelchair::loop() {
     strcmp(cmd, WHEELCHAIR_ROTATE_LEFT) == 0 ||
     strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT) == 0 ||
     strcmp(cmd, WHEELCHAIR_ROTATE_LEFT_VOICE) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT_VOICE) == 0
+    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT_VOICE) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_LEFT) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_LEFT2) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_LEFT3) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_RIGHT) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_RIGHT2) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_RIGHT3) == 0
   ) {
     strcpy(directionCommand, cmd);
   }
@@ -97,6 +103,15 @@ void Wheelchair::loop() {
       moveBackward();
       oldTime = millis();
     }
+  } else if (
+    strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT) == 0 ||
+    strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT2) == 0 ||
+    strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT3) == 0
+  ) {
+    if (currentTime - oldTime > TIME_FOR_MOVE) {
+      moveLeft();
+      oldTime = millis();
+    }
   }
 }
 
@@ -107,6 +122,28 @@ void Wheelchair::moveForward() {
   if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += 1;
   if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += 1;
 
+  st.motor(MOTOR_LEFT, this->leftEngineSpeed);
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
+}
+
+void Wheelchair::moveLeft() {
+  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent;
+  int limiterSpeed = maxSpeed * 0.1;
+
+  if (strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT2) == 0) {
+    limiterSpeed = maxSpeed * 0.15;
+  } else if (strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT3) == 0) {
+    limiterSpeed = maxSpeed * 0.2;
+  }
+
+  const int rightSpeed = maxSpeed - limiterSpeed;
+  const int leftSpeed = maxSpeed + limiterSpeed;
+
+  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += 1;
+  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= 1;
+  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= 1;
+  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 1;
+  
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
 }
