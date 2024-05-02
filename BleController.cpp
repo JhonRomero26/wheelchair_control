@@ -35,7 +35,6 @@ void BleController::sendCommand(const char *cmd) {
   }
 
   reply[i] = '\0';
-  Serial.println(reply);
 }
 
 void BleController::readCommand(char *buffer, size_t bufferSize) {
