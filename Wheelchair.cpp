@@ -10,7 +10,7 @@
 #endif
 
 #ifndef TIME_FOR_STOP
-  #define TIME_FOR_STOP  150   // time for move in ms
+  #define TIME_FOR_STOP  50   // time for move in ms
 #endif
 
 SabertoothSimplified st;
@@ -50,7 +50,7 @@ enum MOTORS {
 #define WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT2 0.25
 #define WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT3 0.35
 
-#define WHEELCHAIR_ENGINE_CORRECTION_PERCENT 0.78
+#define WHEELCHAIR_ENGINE_CORRECTION_PERCENT 0.85
 
 Wheelchair::Wheelchair(BleController *ble) {
   this->ble = ble;
