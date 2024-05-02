@@ -42,9 +42,9 @@ enum MOTORS {
 #define WHEELCHAIR_SPEED_MEDIUM "nv\0\n"
 #define WHEELCHAIR_SPEED_FAST "fv\0\n"
 
-#define WHEELCHAIR_SPEED_SLOW_VAlUE 0.15
-#define WHEELCHAIR_SPEED_MEDIUM_VAlUE 0.25
-#define WHEELCHAIR_SPEED_FAST_VAlUE 0.35
+#define WHEELCHAIR_SPEED_SLOW_VAlUE 0.2
+#define WHEELCHAIR_SPEED_MEDIUM_VAlUE 0.4
+#define WHEELCHAIR_SPEED_FAST_VAlUE 0.5
 
 #define WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT 0.15
 #define WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT2 0.25
@@ -188,11 +188,11 @@ void Wheelchair::moveRight() {
 
 
 void Wheelchair::moveBackward() {
-  const int maxSpeed = -MAX_SPEED_MOTOR * 0.2;
-  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed -= 1;
-  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed -= 1;
-  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += 1;
-  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += 1;
+  const int maxSpeed = 20;
+  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed += 1;
+  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed += 1;
+  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed -= 1;
+  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed -= 1;
 
   st.motor(MOTOR_LEFT, this->leftEngineSpeed * WHEELCHAIR_ENGINE_CORRECTION_PERCENT);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
