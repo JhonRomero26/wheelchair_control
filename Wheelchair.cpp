@@ -103,7 +103,7 @@ void Wheelchair::moveForward() {
 }
 
 void Wheelchair::moveLeft() {
-  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent;
+  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent * WHEELCHAIR_MAX_SPEED_CORRECTION;
   int limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT;
 
   if (strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT2) == 0) {
@@ -126,7 +126,7 @@ void Wheelchair::moveLeft() {
 
 
 void Wheelchair::moveRight() {
-  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent;
+  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent * WHEELCHAIR_MAX_SPEED_CORRECTION;
   int limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT;
 
   if (strcmp(directionCommand, WHEELCHAIR_MOVE_RIGHT2) == 0) {
