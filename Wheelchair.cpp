@@ -144,7 +144,7 @@ void Wheelchair::moveRight() {
   if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 1;
   
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
-  st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * (WHEELCHAIR_ENGINE_CORRECTION_PERCENT - 0.18));
 }
 
 
