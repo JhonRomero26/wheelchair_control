@@ -24,7 +24,7 @@ void Wheelchair::begin(int bauds) {
 }
 
 void Wheelchair::loop() {
-  const char cmd[32];
+  char cmd[32];
   ble->readCommand(cmd, sizeof(cmd));
   const int currentTime = millis();
 
