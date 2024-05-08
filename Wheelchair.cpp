@@ -93,6 +93,11 @@ void Wheelchair::loop() {
       rotateLeft();
       oldTime = millis();
     }
+  } else if (strcmp(directionCommand, WHEELCHAIR_ROTATE_RIGHT) == 0) {
+    if (currentTime - oldTime > TIME_FOR_MOVE) {
+      rotateRight();
+      oldTime = millis();
+    }
   }
 }
 
@@ -164,6 +169,21 @@ void Wheelchair::rotateLeft() {
   
   st.motor(MOTOR_LEFT, this->leftEngineSpeed * WHEELCHAIR_ENGINE_CORRECTION_PERCENT);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
+}
+
+void Wheelchair::rotateRight() {
+  const int maxSpeed = 15;
+
+  const int rightSpeed = -(maxSpeed + 5);
+  const int leftSpeed = maxSpeed;
+
+  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += 7;
+  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= 7;
+  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= 7;
+  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 7;
+  
+  st.motor(MOTOR_LEFT, this->leftEngineSpeed);
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * WHEELCHAIR_ENGINE_CORRECTION_PERCENT);
 }
 
 void Wheelchair::moveBackward() {
