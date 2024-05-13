@@ -1,9 +1,9 @@
 #include "Wheelchair.h"
 #include "Arduino.h"
-#include "SabertoothSimplified.h"
+#include "Sabertooth.h"
 
 
-SabertoothSimplified st;
+Sabertooth st(128);
 int oldTime = 0;
 char directionCommand[32];
 
@@ -18,7 +18,7 @@ Wheelchair::Wheelchair(BleController *ble) {
 }
 
 void Wheelchair::begin(int bauds) {
-  SabertoothTXPinSerial.begin(bauds);
+  st.setBaudRate(bauds);
   st.motor(MOTOR_LEFT, 0);
   st.motor(MOTOR_RIGHT, 0);
 }
