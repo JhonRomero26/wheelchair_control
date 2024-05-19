@@ -1,24 +1,8 @@
 #include "HanaMPU6050.h"
 
 
-float rateRoll, ratePitch, rateYaw;
-float rateCalibrationRoll, rateCalibrationPitch, rateCalibrationYaw;
-int rateCalibrationNumber;
-
-float accX, accY, accZ;
-float angleRoll, anglePitch, angleYaw;
-
-float kalmanAngleRoll = 0,
-  kalmanUncertaintyAngleRoll = 2*2;
-float kalmanAnglePitch = 0,
-  kalmanUncertaintyAnglePitch = 2*2;
-
-float kalman1DOutput[] = {0, 0};
-float rad2deg = 180 / PI;
-
-float gyro_meassurement = MPU6050_MEASUREMENT_250_DEG;
-int accel_measurement = MPU6050_MEASUREMENT_2_G;
-
+float mpuPreviousTime, mpuCurrentTime;
+float _kalman1DOutput[2] = {0, 0};
 
 void HanaMPU6050::setClock(int clock) {
   Wire.setClock(clock);
@@ -49,8 +33,8 @@ void HanaMPU6050::setGyroRange(mpu6050_gyro_range_t gyro) {
 }
 
 void HanaMPU6050::getAngle(mpu6050_angle_t *angle) {
-  angle->roll = kalmanAngleRoll;
-  angle->pitch = kalmanAnglePitch;
+  angle->roll = angleRoll;
+  angle->pitch = anglePitch;
 }
 
 void HanaMPU6050::getAcceleration(mpu6050_accel_t *acc) {
@@ -66,9 +50,9 @@ void HanaMPU6050::getRate(mpu6050_rate_t *rate) {
 }
 
 void HanaMPU6050::getGyro(mpu6050_gyro_t *gyro) {
-  gyro->roll = rateRoll;
-  gyro->pitch = ratePitch;
-  gyro->yaw = rateYaw;
+  gyro->roll = gyroRoll;
+  gyro->pitch = gyroPitch;
+  gyro->yaw = gyroYaw;
 }
 
 void HanaMPU6050::begin(double *ts, uint8_t i2c_addr) {
@@ -83,89 +67,93 @@ void HanaMPU6050::begin(double *ts, uint8_t i2c_addr) {
   Wire.write(0x00);
   Wire.endTransmission();
 
-  for (
-    rateCalibrationNumber = 0;
-    rateCalibrationNumber < 2000;
-    rateCalibrationNumber++
-  ) {
-    mpuSignals();
-    rateCalibrationRoll += rateRoll;
-    rateCalibrationPitch += ratePitch;
-    rateCalibrationYaw += rateYaw;
-  }
+  calculateError();
 
-  rateCalibrationRoll /= 2000;
-  rateCalibrationPitch /= 2000;
-  rateCalibrationYaw /= 2000;
+  mpuCurrentTime = micros();
 }
 
 void HanaMPU6050::loop() {
   // put your main code here, to run repeatedly:
   mpuSignals();
+  double accAngleRoll = (atan(accY / sqrt(accZ * accZ + accX * accX)) * RAD_2_DEG) - accAngleErrorRoll;
+  double accAnglePitch = (-atan(accX / sqrt(accZ * accZ + accY * accY)) * RAD_2_DEG) - accAngleErrorPitch;
+
   rateRoll -= rateCalibrationRoll;
   ratePitch -= rateCalibrationPitch;
   rateYaw -= rateCalibrationYaw;
 
+  mpuPreviousTime = mpuCurrentTime;
+  mpuCurrentTime = micros();
+  float dt = (mpuCurrentTime - mpuPreviousTime) / 1000000;
+
+  gyroRoll = 0.96 * (rateRoll * dt) + 0.04 * accAngleRoll;
+  gyroPitch = 0.96 * (ratePitch * dt) + 0.04 * accAnglePitch;
+  gyroYaw = rateYaw * dt;
+
   kalmanCalculate(
-    kalmanAngleRoll,
+    angleRoll,
     kalmanUncertaintyAngleRoll,
     rateRoll,
-    angleRoll
+    accAngleRoll
   );
-  kalmanAngleRoll = kalman1DOutput[0];
-  kalmanUncertaintyAngleRoll = kalman1DOutput[1];
+  angleRoll = _kalman1DOutput[0];
+  kalmanUncertaintyAngleRoll = _kalman1DOutput[1];
   
 
   kalmanCalculate(
-    kalmanAnglePitch,
+    anglePitch,
     kalmanUncertaintyAnglePitch,
     ratePitch,
-    anglePitch
+    accAnglePitch
   );
-  kalmanAnglePitch = kalman1DOutput[0];
-  kalmanUncertaintyAnglePitch = kalman1DOutput[1];
+  anglePitch = _kalman1DOutput[0];
+  kalmanUncertaintyAnglePitch = _kalman1DOutput[1];
 }
 
-
-void HanaMPU6050::mpuSignals(void) {
-  Wire.beginTransmission(0x68);
+void HanaMPU6050::readAcceleration() {
+  Wire.beginTransmission(i2c_address);
   Wire.write(0x1A);
   Wire.write(0x05);
   Wire.endTransmission();
-  Wire.beginTransmission(0x68);
+  Wire.beginTransmission(i2c_address);
   Wire.write(0x1C);
-  Wire.write(0x10);
+  Wire.write(accel_range);
   Wire.endTransmission();
-  Wire.beginTransmission(0x68);
+  Wire.beginTransmission(i2c_address);
   Wire.write(0x3B);
   Wire.endTransmission();
-  Wire.requestFrom(0x68, 6);
+  Wire.requestFrom(i2c_address, 6);
+
   int16_t accXLSB = Wire.read() << 8 | Wire.read();
   int16_t accYLSB = Wire.read() << 8 | Wire.read();
   int16_t accZLSB = Wire.read() << 8 | Wire.read();
 
-  Wire.beginTransmission(0x68);
+  accX = (float) accXLSB / accel_measurement;
+  accY = (float) accYLSB / accel_measurement;
+  accZ = (float) accZLSB / accel_measurement;
+}
+
+void HanaMPU6050::readRate(void) {
+  Wire.beginTransmission(i2c_address);
   Wire.write(0x1B);
-  Wire.write(0x8);
+  Wire.write(gyro_range);
   Wire.endTransmission();
-  Wire.beginTransmission(0x68);
+  Wire.beginTransmission(i2c_address);
   Wire.write(0x43);
   Wire.endTransmission();
-  Wire.requestFrom(0x68, 6);
+  Wire.requestFrom(i2c_address, 6);
   int16_t gyroX = Wire.read() << 8 | Wire.read();
   int16_t gyroY = Wire.read() << 8 | Wire.read();
   int16_t gyroZ = Wire.read() << 8 | Wire.read();
 
-  rateRoll = (float) gyroX / 65.5;
-  ratePitch = (float) gyroY / 65.5;
-  rateYaw = (float) gyroZ / 65.5;
+  rateRoll = (float) gyroX / gyro_meassurement;
+  ratePitch = (float) gyroY / gyro_meassurement;
+  rateYaw = (float) gyroZ / gyro_meassurement;
+}
 
-  accX = (float) accXLSB / 4096 - ACCX_CORRECTION;
-  accY = (float) accYLSB / 4096 + ACCY_CORRECTION;
-  accZ = (float) accZLSB / 4096 - ACCZ_CORRECTION;
-
-  angleRoll = atan(accY / sqrt(accZ * accZ + accX * accX)) * rad2deg;
-  anglePitch = - atan(accX / sqrt(accZ * accZ + accY * accY)) * rad2deg;
+void HanaMPU6050::mpuSignals(void) {
+  readAcceleration();
+  readRate();
 }
 
 void HanaMPU6050::kalmanCalculate(
@@ -181,6 +169,37 @@ void HanaMPU6050::kalmanCalculate(
   kalmanState = kalmanState + kalmanGain * (kalmanMeasurement - kalmanState);
   kalmanUncertainty = kalmanUncertainty * (1 - kalmanGain);
 
-  kalman1DOutput[0] = kalmanState;
-  kalman1DOutput[1] = kalmanUncertainty;
+  _kalman1DOutput[0] = kalmanState;
+  _kalman1DOutput[1] = kalmanUncertainty;
+}
+
+void HanaMPU6050::calculateError() {
+  //When this function is called, ensure the car is stationary. See Step 2 for more info
+  uint16_t maxCalibration = 2000;
+  
+  // Read accelerometer values maxCalibration times
+  for (
+    rateCalibrationNumber = 0;
+    rateCalibrationNumber < maxCalibration;
+    rateCalibrationNumber++
+  ) {
+    mpuSignals();
+  
+    accAngleErrorRoll += atan((accY) / sqrt(accX * accX + accZ * accZ)) * RAD_2_DEG;
+    accAngleErrorPitch += - atan(accX / sqrt(accY * accY + accZ * accZ)) * RAD_2_DEG;
+
+    rateCalibrationRoll += rateRoll;
+    rateCalibrationPitch += ratePitch;
+    rateCalibrationYaw += rateYaw;
+  }
+
+  //Divide the sum to get the error value
+  accAngleErrorRoll /= maxCalibration;
+  accAngleErrorPitch /= maxCalibration;
+
+  //Divide the sum to get the error value
+  rateCalibrationRoll /= maxCalibration;
+  rateCalibrationPitch /= maxCalibration;
+  rateCalibrationYaw /= maxCalibration;
+  Serial.println("The the gryoscope setting in MPU6050 has been calibrated");
 }

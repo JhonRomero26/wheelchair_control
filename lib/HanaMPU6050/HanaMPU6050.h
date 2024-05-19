@@ -79,9 +79,39 @@ typedef enum {
 #define MPU6050_MEASUREMENT_1000_DEG 32.8 ///< +/- 1000 deg/s
 #define MPU6050_MEASUREMENT_2000_DEG 16.4 ///< +/- 2000 deg/s
 
+#define RAD_2_DEG 180 / PI
 
 class HanaMPU6050 {
   private:
+    double rateCalibrationRoll = 0;
+    double rateCalibrationPitch = 0;
+    double rateCalibrationYaw = 0;
+    double rateCalibrationNumber = 0;
+
+    double accAngleErrorRoll = 0;
+    double accAngleErrorPitch = 0;
+
+    double angleRoll = 0;
+    double anglePitch = 0;
+
+    double rateRoll = 0;
+    double ratePitch = 0;
+    double rateYaw = 0;
+
+    double accX = 0;
+    double accY = 0;
+    double accZ = 0;
+
+    double gyroRoll = 0;
+    double gyroPitch = 0;
+    double gyroYaw = 0;
+
+    double kalmanUncertaintyAngleRoll = 2*2;
+    double kalmanUncertaintyAnglePitch = 2*2;
+
+    float gyro_meassurement = MPU6050_MEASUREMENT_250_DEG;
+    int accel_measurement = MPU6050_MEASUREMENT_2_G;
+
     double *Ts;
     uint8_t i2c_address;
     mpu6050_accel_range_t accel_range = MPU6050_RANGE_2_G;
@@ -94,6 +124,7 @@ class HanaMPU6050 {
     void readAcceleration();
     void readRate();
     void mpuSignals();
+    void calculateError();
 
   public:
     void begin(
