@@ -28,6 +28,14 @@ void Wheelchair::loop() {
   ble->readCommand(cmd, sizeof(cmd));
   const int currentTime = millis();
 
+  String cmdTemp(cmd);
+  if (cmdTemp.indexOf("=") > 0) {
+    if (cmdTemp.startsWith("ec"))
+      this->engineCorection = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toFloat();
+    if (cmdTemp.startsWith("sc"))
+      this->maxSpeedCorection = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toFloat();
+  }
+
   if (strcmp(cmd, WHEELCHAIR_SPEED_SLOW) == 0) {
     this->speedPercent = WHEELCHAIR_SPEED_SLOW_VAlUE;
   } else if (strcmp(cmd, WHEELCHAIR_SPEED_MEDIUM) == 0) {
@@ -103,17 +111,17 @@ void Wheelchair::loop() {
 
 void Wheelchair::moveForward() {
   const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent;
-  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed -= 1;
-  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed -= 1;
-  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += 1;
-  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += 1;
+  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed -= 5;
+  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed -= 5;
+  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += 5;
+  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += 5;
 
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
-  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * WHEELCHAIR_ENGINE_CORRECTION_PERCENT);
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * this->engineCorection);
 }
 
 void Wheelchair::moveLeft() {
-  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent * WHEELCHAIR_MAX_SPEED_CORRECTION;
+  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent * this->maxSpeedCorection;
   int limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT;
 
   if (strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT2) == 0) {
@@ -125,17 +133,17 @@ void Wheelchair::moveLeft() {
   const int rightSpeed = maxSpeed + limiterSpeed;
   const int leftSpeed = maxSpeed - limiterSpeed;
 
-  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += 1;
-  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= 1;
-  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= 1;
-  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 1;
+  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += 5;
+  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= 5;
+  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= 5;
+  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 5;
   
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
-  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * WHEELCHAIR_ENGINE_CORRECTION_PERCENT);
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * this->engineCorection);
 }
 
 void Wheelchair::moveRight() {
-  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent * WHEELCHAIR_MAX_SPEED_CORRECTION;
+  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent * this->maxSpeedCorection;
   int limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT;
 
   if (strcmp(directionCommand, WHEELCHAIR_MOVE_RIGHT2) == 0) {
@@ -147,13 +155,13 @@ void Wheelchair::moveRight() {
   const int rightSpeed = maxSpeed - limiterSpeed;
   const int leftSpeed = maxSpeed + limiterSpeed;
 
-  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += 1;
-  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= 1;
-  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= 1;
-  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 1;
+  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += 5;
+  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= 5;
+  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= 5;
+  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 5;
   
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
-  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * (WHEELCHAIR_ENGINE_CORRECTION_PERCENT - 0.18));
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * (this->engineCorection - 0.18));
 }
 
 void Wheelchair::rotateLeft() {
@@ -167,7 +175,7 @@ void Wheelchair::rotateLeft() {
   if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= 7;
   if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 7;
   
-  st.motor(MOTOR_LEFT, this->leftEngineSpeed * WHEELCHAIR_ENGINE_CORRECTION_PERCENT);
+  st.motor(MOTOR_LEFT, this->leftEngineSpeed * this->engineCorection);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
 }
 
@@ -183,27 +191,27 @@ void Wheelchair::rotateRight() {
   if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 7;
   
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
-  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * WHEELCHAIR_ENGINE_CORRECTION_PERCENT);
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * this->engineCorection);
 }
 
 void Wheelchair::moveBackward() {
   const int maxSpeed = -20;
-  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed -= 1;
-  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed -= 1;
-  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += 1;
-  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += 1;
+  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed -= 5;
+  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed -= 5;
+  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += 5;
+  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += 5;
 
-  st.motor(MOTOR_LEFT, this->leftEngineSpeed * WHEELCHAIR_ENGINE_CORRECTION_PERCENT);
+  st.motor(MOTOR_LEFT, this->leftEngineSpeed * this->engineCorection);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
 }
 
 void Wheelchair::stop() {
   if (this->leftEngineSpeed == 0 && this->rightEngineSpeed == 0) return;
   
-  if (this->leftEngineSpeed > 0) this->leftEngineSpeed -= 3;
-  if (this->rightEngineSpeed > 0) this->rightEngineSpeed -= 3;
-  if (this->leftEngineSpeed < 0) this->leftEngineSpeed += 3;
-  if (this->rightEngineSpeed < 0) this->rightEngineSpeed += 3;
+  if (this->leftEngineSpeed > 0) this->leftEngineSpeed -= 5;
+  if (this->rightEngineSpeed > 0) this->rightEngineSpeed -= 5;
+  if (this->leftEngineSpeed < 0) this->leftEngineSpeed += 5;
+  if (this->rightEngineSpeed < 0) this->rightEngineSpeed += 5;
 
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
