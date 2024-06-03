@@ -15,16 +15,20 @@
 
 // MOVEMENT_COMMAND
 #define WHEELCHAIR_MOVE_FORWARD "mf\0\n"
-#define WHEELCHAIR_MOVE_LEFT "ml\0\n"
+#define WHEELCHAIR_MOVE_LEFT "ml1\0\n"
 #define WHEELCHAIR_MOVE_LEFT2 "ml2\0\n"
 #define WHEELCHAIR_MOVE_LEFT3 "ml3\0\n"
+#define WHEELCHAIR_MOVE_LEFT_OFF "ml0\0\n"
 #define WHEELCHAIR_MOVE_BACKWARD "mb\0\n"
-#define WHEELCHAIR_MOVE_RIGHT "mr\0\n"
+#define WHEELCHAIR_MOVE_RIGHT "mr1\0\n"
 #define WHEELCHAIR_MOVE_RIGHT2 "mr2\0\n"
 #define WHEELCHAIR_MOVE_RIGHT3 "mr3\0\n"
+#define WHEELCHAIR_MOVE_RIGHT_OFF "mr0\0\n"
 #define WHEELCHAIR_MOVE_STOP "ms\0\n"
-#define WHEELCHAIR_ROTATE_LEFT "rl\0\n"
-#define WHEELCHAIR_ROTATE_RIGHT "rr\0\n"
+#define WHEELCHAIR_ROTATE_LEFT "rl1\0\n"
+#define WHEELCHAIR_ROTATE_LEFT_OFF "rl0\0\n"
+#define WHEELCHAIR_ROTATE_RIGHT "rr1\0\n"
+#define WHEELCHAIR_ROTATE_RIGHT_OFF "rr0\0\n"
 #define WHEELCHAIR_ROTATE_LEFT_VOICE "rlv\0\n"
 #define WHEELCHAIR_ROTATE_RIGHT_VOICE "rrv\0\n"
 
@@ -45,7 +49,7 @@
 #define WHEELCHAIR_ENGINE_CORRECTION_PERCENT 0.88
 #define WHEELCHAIR_MAX_SPEED_CORRECTION 0.78
 #define WHEELCHAIR_ENGINE_CORRECTION_CMD "ec"
-#define WHEELCHAIR_SPEED_CORRECTION_CMD "sc"
+#define WHEELCHAIR_SPEED_CORRECTION_CMD "ac"
 #define WHEELCHAIR_VALUE_SEPARATOR_CMD "="
 
 
@@ -54,6 +58,7 @@ class Wheelchair {
     BleController *ble;
     int leftEngineSpeed = 0;
     int rightEngineSpeed = 0;
+    int acceleration = 2;
     float speedPercent = WHEELCHAIR_SPEED_SLOW_VAlUE;
     int engineCorection = WHEELCHAIR_ENGINE_CORRECTION_PERCENT;
     int maxSpeedCorection = WHEELCHAIR_MAX_SPEED_CORRECTION;
@@ -66,6 +71,7 @@ class Wheelchair {
     void moveRight();
     void rotateLeft();
     void rotateRight();
+    void movements();
 
   public:
     Wheelchair(BleController *ble);

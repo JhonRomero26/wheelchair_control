@@ -1,11 +1,13 @@
 #include "Wheelchair.h"
 #include "Arduino.h"
-#include "Sabertooth.h"
+#include "SabertoothSimplified.h"
 
 
-Sabertooth st(128);
+SabertoothSimplified st;
 int oldTime = 0;
-char directionCommand[32];
+char directionCommand[32] = WHEELCHAIR_MOVE_STOP;
+char cmd[32];
+char oldCmd[32];
 
 enum MOTORS {
   MOTOR_LEFT = 1,
@@ -18,22 +20,23 @@ Wheelchair::Wheelchair(BleController *ble) {
 }
 
 void Wheelchair::begin(int bauds) {
-  st.setBaudRate(bauds);
+  SabertoothTXPinSerial.begin(bauds);
   st.motor(MOTOR_LEFT, 0);
   st.motor(MOTOR_RIGHT, 0);
 }
 
 void Wheelchair::loop() {
-  char cmd[32];
   ble->readCommand(cmd, sizeof(cmd));
   const int currentTime = millis();
 
   String cmdTemp(cmd);
   if (cmdTemp.indexOf("=") > 0) {
-    if (cmdTemp.startsWith("ec"))
-      this->engineCorection = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toFloat();
-    if (cmdTemp.startsWith("sc"))
-      this->maxSpeedCorection = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toFloat();
+    if (cmdTemp.startsWith("e")) {
+      float data = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toInt();
+      this->engineCorection = (float) data / 100;
+    }
+    if (cmdTemp.startsWith("ac"))
+      this->acceleration = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toInt();
   }
 
   if (strcmp(cmd, WHEELCHAIR_SPEED_SLOW) == 0) {
@@ -44,14 +47,17 @@ void Wheelchair::loop() {
     this->speedPercent = WHEELCHAIR_SPEED_FAST_VAlUE;
   }
 
+  movements();
+}
+
+void Wheelchair::movements() {
   if (
     strcmp(cmd, WHEELCHAIR_MOVE_FORWARD) == 0 ||
     strcmp(cmd, WHEELCHAIR_MOVE_BACKWARD) == 0 ||
-    strcmp(cmd, WHEELCHAIR_MOVE_STOP) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_LEFT) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_LEFT_VOICE) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT_VOICE) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_STOP) == 0
+  ) {
+    strcpy(directionCommand, cmd);
+  } else if (
     strcmp(cmd, WHEELCHAIR_MOVE_LEFT) == 0 ||
     strcmp(cmd, WHEELCHAIR_MOVE_LEFT2) == 0 ||
     strcmp(cmd, WHEELCHAIR_MOVE_LEFT3) == 0 ||
@@ -59,22 +65,29 @@ void Wheelchair::loop() {
     strcmp(cmd, WHEELCHAIR_MOVE_RIGHT2) == 0 ||
     strcmp(cmd, WHEELCHAIR_MOVE_RIGHT3) == 0
   ) {
+    strcpy(oldCmd, directionCommand);
     strcpy(directionCommand, cmd);
+  } else if (
+    strcmp(cmd, WHEELCHAIR_MOVE_LEFT_OFF) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_RIGHT_OFF) == 0 ||
+    strcmp(cmd, WHEELCHAIR_ROTATE_LEFT_OFF) == 0 ||
+    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT_OFF) == 0
+  ) {
+    strcpy(directionCommand, oldCmd);
   }
-
-
+  
   if (strcmp(directionCommand, WHEELCHAIR_MOVE_FORWARD) == 0) {
-    if (currentTime - oldTime > TIME_FOR_MOVE) {
+    if (millis() - oldTime > TIME_FOR_MOVE) {
       moveForward();
       oldTime = millis();
     }
   } else if (strcmp(directionCommand, WHEELCHAIR_MOVE_STOP) == 0) {
-    if (currentTime - oldTime > TIME_FOR_STOP) {
+    if (millis() - oldTime > TIME_FOR_STOP) {
       stop();
       oldTime = millis();
     }
   } else if (strcmp(directionCommand, WHEELCHAIR_MOVE_BACKWARD) == 0) {
-    if (currentTime - oldTime > TIME_FOR_MOVE) {
+    if (millis() - oldTime > TIME_FOR_MOVE) {
       moveBackward();
       oldTime = millis();
     }
@@ -83,7 +96,7 @@ void Wheelchair::loop() {
     strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT2) == 0 ||
     strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT3) == 0
   ) {
-    if (currentTime - oldTime > TIME_FOR_MOVE) {
+    if (millis() - oldTime > TIME_FOR_MOVE) {
       moveLeft();
       oldTime = millis();
     }
@@ -92,17 +105,17 @@ void Wheelchair::loop() {
     strcmp(directionCommand, WHEELCHAIR_MOVE_RIGHT2) == 0 ||
     strcmp(directionCommand, WHEELCHAIR_MOVE_RIGHT3) == 0
   ) {
-    if (currentTime - oldTime > TIME_FOR_MOVE) {
+    if (millis() - oldTime > TIME_FOR_MOVE) {
       moveRight();
       oldTime = millis();
     }
   } else if (strcmp(directionCommand, WHEELCHAIR_ROTATE_LEFT) == 0) {
-    if (currentTime - oldTime > TIME_FOR_MOVE) {
+    if (millis() - oldTime > TIME_FOR_MOVE) {
       rotateLeft();
       oldTime = millis();
     }
   } else if (strcmp(directionCommand, WHEELCHAIR_ROTATE_RIGHT) == 0) {
-    if (currentTime - oldTime > TIME_FOR_MOVE) {
+    if (millis() - oldTime > TIME_FOR_MOVE) {
       rotateRight();
       oldTime = millis();
     }
@@ -111,57 +124,57 @@ void Wheelchair::loop() {
 
 void Wheelchair::moveForward() {
   const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent;
-  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed -= 5;
-  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed -= 5;
-  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += 5;
-  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += 5;
+  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed -= this->acceleration;
+  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed -= this->acceleration;
+  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += this->acceleration;
+  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += this->acceleration;
 
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed * this->engineCorection);
 }
 
 void Wheelchair::moveLeft() {
-  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent * this->maxSpeedCorection;
+  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent * this->engineCorection;
   int limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT;
 
-  if (strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT2) == 0) {
+  if (strcmp(cmd, WHEELCHAIR_MOVE_LEFT2) == 0) {
     limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT2;
-  } else if (strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT3) == 0) {
+  } else if (strcmp(cmd, WHEELCHAIR_MOVE_LEFT3) == 0) {
     limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT3;
   }
 
   const int rightSpeed = maxSpeed + limiterSpeed;
   const int leftSpeed = maxSpeed - limiterSpeed;
 
-  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += 5;
-  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= 5;
-  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= 5;
-  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 5;
+  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += this->acceleration;
+  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= this->acceleration;
+  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= this->acceleration;
+  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += this->acceleration;
   
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed * this->engineCorection);
 }
 
 void Wheelchair::moveRight() {
-  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent * this->maxSpeedCorection;
+  const int maxSpeed = MAX_SPEED_MOTOR * this->speedPercent * this->engineCorection;
   int limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT;
 
-  if (strcmp(directionCommand, WHEELCHAIR_MOVE_RIGHT2) == 0) {
+  if (strcmp(cmd, WHEELCHAIR_MOVE_RIGHT2) == 0) {
     limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT2;
-  } else if (strcmp(directionCommand, WHEELCHAIR_MOVE_RIGHT3) == 0) {
+  } else if (strcmp(cmd, WHEELCHAIR_MOVE_RIGHT3) == 0) {
     limiterSpeed = maxSpeed * WHEELCHAIR_MOVE_LEFT_RIGHT_PERCENT3;
   }
 
   const int rightSpeed = maxSpeed - limiterSpeed;
   const int leftSpeed = maxSpeed + limiterSpeed;
 
-  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += 5;
-  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= 5;
-  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= 5;
-  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 5;
+  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += this->acceleration;
+  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= this->acceleration;
+  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= this->acceleration;
+  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += this->acceleration;
   
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
-  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * (this->engineCorection - 0.18));
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * this->engineCorection);
 }
 
 void Wheelchair::rotateLeft() {
@@ -170,13 +183,17 @@ void Wheelchair::rotateLeft() {
   const int rightSpeed = maxSpeed;
   const int leftSpeed = -(maxSpeed + 5);
 
-  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += 7;
-  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= 7;
-  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= 7;
-  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 7;
+  int acc = this->acceleration + 3;
+  if (acc < 5) acc = 5;
+
+  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += acc;
+  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= acc;
+  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= acc;
+  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += acc;
   
-  st.motor(MOTOR_LEFT, this->leftEngineSpeed * this->engineCorection);
-  st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
+  st.motor(MOTOR_LEFT, this->leftEngineSpeed);
+  // st.motor(MOTOR_LEFT, this->leftEngineSpeed * this->engineCorection);
+  st.motor(MOTOR_RIGHT, this->rightEngineSpeed * this->engineCorection);
 }
 
 void Wheelchair::rotateRight() {
@@ -185,21 +202,24 @@ void Wheelchair::rotateRight() {
   const int rightSpeed = -(maxSpeed + 5);
   const int leftSpeed = maxSpeed;
 
-  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += 7;
-  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= 7;
-  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= 7;
-  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += 7;
+  int acc = this->acceleration + 3;
+  if (acc < 5) acc = 5;
+
+  if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += acc;
+  if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= acc;
+  if (this->rightEngineSpeed > rightSpeed) this->rightEngineSpeed -= acc;
+  if (this->rightEngineSpeed < rightSpeed) this->rightEngineSpeed += acc;
   
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed * this->engineCorection);
 }
 
 void Wheelchair::moveBackward() {
-  const int maxSpeed = -20;
-  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed -= 5;
-  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed -= 5;
-  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += 5;
-  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += 5;
+  const int maxSpeed = -MAX_SPEED_MOTOR * WHEELCHAIR_SPEED_SLOW_VAlUE;
+  if (this->leftEngineSpeed > maxSpeed) this->leftEngineSpeed -= this->acceleration;
+  if (this->rightEngineSpeed > maxSpeed) this->rightEngineSpeed -= this->acceleration;
+  if (this->leftEngineSpeed < maxSpeed) this->leftEngineSpeed += this->acceleration;
+  if (this->rightEngineSpeed < maxSpeed) this->rightEngineSpeed += this->acceleration;
 
   st.motor(MOTOR_LEFT, this->leftEngineSpeed * this->engineCorection);
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
@@ -207,11 +227,14 @@ void Wheelchair::moveBackward() {
 
 void Wheelchair::stop() {
   if (this->leftEngineSpeed == 0 && this->rightEngineSpeed == 0) return;
+
+   int acc = this->acceleration + 2;
+  if (acc < 5) acc = 5;
   
-  if (this->leftEngineSpeed > 0) this->leftEngineSpeed -= 5;
-  if (this->rightEngineSpeed > 0) this->rightEngineSpeed -= 5;
-  if (this->leftEngineSpeed < 0) this->leftEngineSpeed += 5;
-  if (this->rightEngineSpeed < 0) this->rightEngineSpeed += 5;
+  if (this->leftEngineSpeed > 0) this->leftEngineSpeed -= this->acceleration;
+  if (this->rightEngineSpeed > 0) this->rightEngineSpeed -= this->acceleration;
+  if (this->leftEngineSpeed < 0) this->leftEngineSpeed += this->acceleration;
+  if (this->rightEngineSpeed < 0) this->rightEngineSpeed += this->acceleration;
 
   st.motor(MOTOR_RIGHT, this->rightEngineSpeed);
   st.motor(MOTOR_LEFT, this->leftEngineSpeed);

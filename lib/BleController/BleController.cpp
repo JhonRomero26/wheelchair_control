@@ -11,14 +11,16 @@ void BleController::begin(
   const char *name
 ) {
   serial->begin(bauds);
+  String nameCmd();
+  String fullName("AT+NAME" + *name);
 
   sendCommand("AT");
   sendCommand("AT+ROLE0");
-  sendCommand("AT+NAMEHello");
+  sendCommand(fullName.c_str());
   sendCommand("AT+START");
 
   serial->setTimeout(10);
-  delay(100);
+  delay(5000);
   serial->write("");
 }
 
@@ -35,6 +37,7 @@ void BleController::sendCommand(const char *cmd) {
   }
 
   reply[i] = '\0';
+  Serial.println(reply);
 }
 
 void BleController::readCommand(char *buffer, size_t bufferSize) {
