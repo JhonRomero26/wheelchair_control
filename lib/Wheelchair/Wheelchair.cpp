@@ -33,7 +33,7 @@ void Wheelchair::loop() {
   if (cmdTemp.indexOf("=") > 0) {
     if (cmdTemp.startsWith("e")) {
       float data = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toInt();
-      this->engineCorection = (float) data / 100;
+      this->engineCorection = (float) data / 10;
     }
     if (cmdTemp.startsWith("ac"))
       this->acceleration = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toInt();
@@ -183,8 +183,8 @@ void Wheelchair::rotateLeft() {
   const int rightSpeed = maxSpeed;
   const int leftSpeed = -(maxSpeed + 5);
 
-  int acc = this->acceleration + 3;
-  if (acc < 5) acc = 5;
+  int acc = this->acceleration + 1;
+  if (acc < 2) acc = 2;
 
   if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += acc;
   if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= acc;
@@ -202,8 +202,8 @@ void Wheelchair::rotateRight() {
   const int rightSpeed = -(maxSpeed + 5);
   const int leftSpeed = maxSpeed;
 
-  int acc = this->acceleration + 3;
-  if (acc < 5) acc = 5;
+  int acc = this->acceleration + 1;
+  if (acc < 2) acc = 2;
 
   if (this->leftEngineSpeed < leftSpeed) this->leftEngineSpeed += acc;
   if (this->leftEngineSpeed > leftSpeed) this->leftEngineSpeed -= acc;
@@ -228,7 +228,7 @@ void Wheelchair::moveBackward() {
 void Wheelchair::stop() {
   if (this->leftEngineSpeed == 0 && this->rightEngineSpeed == 0) return;
 
-   int acc = this->acceleration + 2;
+   int acc = this->acceleration + 3;
   if (acc < 5) acc = 5;
   
   if (this->leftEngineSpeed > 0) this->leftEngineSpeed -= this->acceleration;
