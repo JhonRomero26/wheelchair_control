@@ -11,7 +11,6 @@ void BleController::begin(
   const char *name
 ) {
   serial->begin(bauds);
-  String nameCmd();
   String fullName("AT+NAME" + *name);
 
   sendCommand("AT");
