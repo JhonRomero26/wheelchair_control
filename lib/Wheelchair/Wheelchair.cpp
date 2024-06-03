@@ -7,7 +7,6 @@ SabertoothSimplified st;
 int oldTime = 0;
 char directionCommand[32] = WHEELCHAIR_MOVE_STOP;
 char cmd[32];
-char oldCmd[32];
 
 enum MOTORS {
   MOTOR_LEFT = 1,
@@ -49,11 +48,7 @@ void Wheelchair::loop() {
   if (
     strcmp(cmd, WHEELCHAIR_MOVE_FORWARD) == 0 ||
     strcmp(cmd, WHEELCHAIR_MOVE_BACKWARD) == 0 ||
-    strcmp(cmd, WHEELCHAIR_MOVE_STOP) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_LEFT) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_LEFT_VOICE) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT_VOICE) == 0
+    strcmp(cmd, WHEELCHAIR_MOVE_STOP) == 0
   ) {
     strcpy(directionCommand, cmd);
   }
@@ -80,36 +75,7 @@ void Wheelchair::loop() {
 }
 
 void Wheelchair::movements() {
-  if (
-    strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT) == 0 ||
-    strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT2) == 0 ||
-    strcmp(directionCommand, WHEELCHAIR_MOVE_LEFT3) == 0
-  ) {
-    if (millis() - oldTime > TIME_FOR_MOVE) {
-      moveLeft();
-      oldTime = millis();
-    }
-  } else if (
-    strcmp(directionCommand, WHEELCHAIR_MOVE_RIGHT) == 0 ||
-    strcmp(directionCommand, WHEELCHAIR_MOVE_RIGHT2) == 0 ||
-    strcmp(directionCommand, WHEELCHAIR_MOVE_RIGHT3) == 0
-  ) {
-    if (millis() - oldTime > TIME_FOR_MOVE) {
-      moveRight();
-      oldTime = millis();
-    }
-  } else if (strcmp(directionCommand, WHEELCHAIR_ROTATE_LEFT) == 0) {
-    if (millis() - oldTime > TIME_FOR_MOVE) {
-      rotateLeft();
-      oldTime = millis();
-    }
-  } else if (strcmp(directionCommand, WHEELCHAIR_ROTATE_RIGHT) == 0) {
-    strcpy(directionCommand, oldCmd);
-    if (millis() - oldTime > TIME_FOR_MOVE) {
-      rotateLeft();
-      oldTime = millis();
-    }
-  } else if (strcmp(directionCommand, WHEELCHAIR_MOVE_FORWARD) == 0) {
+  if (strcmp(directionCommand, WHEELCHAIR_MOVE_FORWARD) == 0) {
     if (millis() - oldTime > TIME_FOR_MOVE) {
       moveForward();
       oldTime = millis();
@@ -232,8 +198,8 @@ void Wheelchair::moveBackward() {
 void Wheelchair::stop() {
   if (this->leftEngineSpeed == 0 && this->rightEngineSpeed == 0) return;
 
-   int acc = this->acceleration;
-  if (acc < 3) acc = 3;
+  int acc = this->acceleration + 3;
+  if (acc < 5) acc = 5;
   
   if (this->leftEngineSpeed > 0) this->leftEngineSpeed -= this->acceleration;
   if (this->rightEngineSpeed > 0) this->rightEngineSpeed -= this->acceleration;
