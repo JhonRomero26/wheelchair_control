@@ -32,7 +32,7 @@ void Wheelchair::loop() {
   if (cmdTemp.indexOf("=") > 0) {
     if (cmdTemp.startsWith("e")) {
       float data = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toInt();
-      this->engineCorection = (float) data / 10;
+      this->engineCorection = (float) data / 100;
     }
     if (cmdTemp.startsWith("ac"))
       this->acceleration = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toInt();
@@ -47,31 +47,35 @@ void Wheelchair::loop() {
   }
 
   if (
+    strcmp(cmd, WHEELCHAIR_MOVE_FORWARD) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_BACKWARD) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_STOP) == 0 ||
+    strcmp(cmd, WHEELCHAIR_ROTATE_LEFT) == 0 ||
+    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT) == 0 ||
+    strcmp(cmd, WHEELCHAIR_ROTATE_LEFT_VOICE) == 0 ||
+    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT_VOICE) == 0
+  ) {
+    strcpy(directionCommand, cmd);
+  }
+
+  if (
     strcmp(cmd, WHEELCHAIR_MOVE_LEFT) == 0 ||
     strcmp(cmd, WHEELCHAIR_MOVE_LEFT2) == 0 ||
-    strcmp(cmd, WHEELCHAIR_MOVE_LEFT3) == 0 ||
+    strcmp(cmd, WHEELCHAIR_MOVE_LEFT3) == 0
+  ) {
+    moveLeft();
+  } else if (
     strcmp(cmd, WHEELCHAIR_MOVE_RIGHT) == 0 ||
     strcmp(cmd, WHEELCHAIR_MOVE_RIGHT2) == 0 ||
-    strcmp(cmd, WHEELCHAIR_MOVE_RIGHT3) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_LEFT) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT) == 0
+    strcmp(cmd, WHEELCHAIR_MOVE_RIGHT3) == 0
   ) {
-    strcpy(oldCmd, directionCommand);
-    strcpy(directionCommand, oldCmd);
-  } else if (
-    strcmp(cmd, WHEELCHAIR_MOVE_RIGHT_OFF) == 0 ||
-    strcmp(cmd, WHEELCHAIR_MOVE_LEFT_OFF) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_LEFT_OFF) == 0 ||
-    strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT_OFF) == 0
-  ) {
-    strcpy(oldCmd, directionCommand);
-    strcpy(directionCommand, cmd);
-  } else if (
-    strcmp(cmd, WHEELCHAIR_MOVE_STOP) == 0 ||
-    strcmp(cmd, WHEELCHAIR_MOVE_FORWARD) == 0 ||
-    strcmp(cmd, WHEELCHAIR_MOVE_BACKWARD) == 0
-  ) {
-    strcpy(directionCommand, cmd);
+    moveRight();
+  } else if (strcmp(cmd, WHEELCHAIR_ROTATE_LEFT) == 0) {
+    rotateLeft();
+  } else if (strcmp(cmd, WHEELCHAIR_ROTATE_RIGHT) == 0) {
+    rotateRight();
+  } else {
+    movements();
   }
 }
 
