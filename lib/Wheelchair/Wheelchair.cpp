@@ -31,10 +31,10 @@ void Wheelchair::loop() {
 
   String cmdTemp(cmd);
   if (cmdTemp.indexOf("=") > 0) {
-    // if (cmdTemp.startsWith("e")) {
-    //   float data = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toInt();
-    //   this->engineCorection = (float) data / 10;
-    // }
+    if (cmdTemp.startsWith("e")) {
+      float data = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toInt();
+      this->engineCorection = (float) data / 10;
+    }
     if (cmdTemp.startsWith("ac"))
       this->acceleration = cmdTemp.substring(cmdTemp.indexOf("=") + 1).toInt();
   }
